@@ -13,6 +13,9 @@ namespace LockOnKeypressConsole
 		private static LowLevelKeyboardProc _proc = HookCallback;
 		private static IntPtr _hookID = IntPtr.Zero;
 
+		private static int strokes;
+		private static int maxStrokes = 3;
+
 		static void Main(string[] args)
 		{
 			var handle = GetConsoleWindow();
@@ -31,15 +34,19 @@ namespace LockOnKeypressConsole
 		{
 			if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
 			{
-				Process.Start(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
-				int vkCode = Marshal.ReadInt32(lParam);
-				Console.WriteLine((Keys)vkCode);
+				if (strokes == maxStrokes)
+				{
+					Process.Start(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
+					int vkCode = Marshal.ReadInt32(lParam);
+					Console.WriteLine((Keys)vkCode);
 
-				Application.Exit();
+					Application.Exit();
 
-				//StreamWriter sw = new StreamWriter(Application.StartupPath + @"\log.txt", true);
-				//sw.Write((Keys)vkCode);
-				//sw.Close();
+					//StreamWriter sw = new StreamWriter(Application.StartupPath + @"\log.txt", true);
+					//sw.Write((Keys)vkCode);
+					//sw.Close();
+				}
+				strokes++;
 			}
 			return CallNextHookEx(_hookID, nCode, wParam, lParam);
 		}
